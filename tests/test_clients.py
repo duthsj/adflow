@@ -27,7 +27,7 @@ def test_list_clients(client):
     client.post("/clients", json={"name": "Test Co", "industry": "Retail"}, headers=auth(token))
     r = client.get("/clients", headers=auth(token))
     assert r.status_code == 200
-    assert len(r.json()) >= 1
+    assert len(r.json()) == 1
 
 def test_get_client(client):
     token = get_token(client)

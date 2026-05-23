@@ -27,7 +27,7 @@ def list_clients(db: Session = Depends(get_db), _: User = Depends(get_current_us
 
 @router.get("/{client_id}", response_model=ClientOut)
 def get_client(client_id: int, db: Session = Depends(get_db), _: User = Depends(get_current_user)):
-    client = db.query(Client).filter(Client.id == client_id).first()
+    client = db.query(Client).filter(Client.id == client_id, Client.active == True).first()
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
     return client
@@ -37,9 +37,8 @@ def update_client(client_id: int, data: ClientUpdate, db: Session = Depends(get_
     client = db.query(Client).filter(Client.id == client_id).first()
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
-    for field, value in data.model_dump(exclude_none=True).items():
-        if hasattr(value, "model_dump"):
-            value = value.model_dump()
+    updates = data.model_dump(exclude_none=True)
+    for field, value in updates.items():
         setattr(client, field, value)
     db.commit()
     db.refresh(client)
