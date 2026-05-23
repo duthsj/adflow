@@ -1,5 +1,6 @@
 from unittest.mock import patch, MagicMock
 from backend.agents.social_agent import generate_social_post
+from backend.agents.ads_agent import generate_ads_copy
 
 def test_generate_social_post_calls_claude():
     mock_message = MagicMock()
@@ -63,3 +64,37 @@ def test_content_generate_endpoint(client):
     assert r.json()["body"] == "Amazing content! #brand #tech"
     assert r.json()["ai_generated"] is True
     assert r.json()["status"] == "draft"
+
+def test_ads_agent_returns_string():
+    mock_message = MagicMock()
+    mock_message.content = [MagicMock(text="50% off this weekend only. Shop now. #sale")]
+
+    with patch("backend.agents.ads_agent._get_client") as mock_get_client:
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+        mock_client.messages.create.return_value = mock_message
+        result = generate_ads_copy(
+            brand_guidelines={"tone": "urgent", "keywords": ["sale", "offer"], "avoid": []},
+            content_type="facebook_ad",
+            client_name="Test Brand",
+            instructions="Weekend flash sale 50% off"
+        )
+
+    assert isinstance(result, str)
+    assert len(result) > 0
+
+def test_ads_agent_generates_ab_variants():
+    mock_message = MagicMock()
+    mock_message.content = [MagicMock(text="VERSION A:\nBuy now!\n\nVERSION B:\nShop today!")]
+
+    with patch("backend.agents.ads_agent._get_client") as mock_get_client:
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+        mock_client.messages.create.return_value = mock_message
+        result = generate_ads_copy(
+            brand_guidelines={},
+            content_type="ab_test",
+            client_name="Brand X"
+        )
+
+    assert isinstance(result, str)
