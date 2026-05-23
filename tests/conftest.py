@@ -1,16 +1,21 @@
 import os
-os.environ.setdefault("DATABASE_URL", "sqlite:///./test.db")
+os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 from backend.database import Base, get_db
 from backend.main import app
 
-SQLALCHEMY_TEST_URL = "sqlite:///./test.db"
+SQLALCHEMY_TEST_URL = "sqlite:///:memory:"
 
-engine_test = create_engine(SQLALCHEMY_TEST_URL, connect_args={"check_same_thread": False})
+engine_test = create_engine(
+    SQLALCHEMY_TEST_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
 TestingSession = sessionmaker(autocommit=False, autoflush=False, bind=engine_test)
 
 def override_get_db():

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from ..models.user import UserRole
 
 class UserCreate(BaseModel):
@@ -6,6 +6,13 @@ class UserCreate(BaseModel):
     password: str
     name: str
     role: UserRole = UserRole.editor
+
+    @field_validator("password")
+    @classmethod
+    def password_min_length(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        return v
 
 class UserOut(BaseModel):
     id: int

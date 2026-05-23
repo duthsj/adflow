@@ -27,20 +27,20 @@ def test_login_success(client):
 def test_login_wrong_password(client):
     client.post("/auth/register", json={
         "email": "wrong@muelaads.com",
-        "password": "correct",
+        "password": "correct123",
         "name": "Wrong User",
         "role": "editor"
     })
     response = client.post("/auth/login", json={
         "email": "wrong@muelaads.com",
-        "password": "incorrect"
+        "password": "incorrect123"
     })
     assert response.status_code == 401
 
 def test_get_me(client):
     r = client.post("/auth/register", json={
         "email": "me@muelaads.com",
-        "password": "pass123",
+        "password": "password123",
         "name": "Me User",
         "role": "admin"
     })
