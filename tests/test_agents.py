@@ -3,6 +3,7 @@ from backend.agents.social_agent import generate_social_post
 from backend.agents.ads_agent import generate_ads_copy
 from backend.agents.design_agent import generate_design_brief
 from backend.agents.video_agent import generate_video_content
+from backend.agents.orchestrator import generate_content as orch_generate
 
 def test_generate_social_post_calls_claude():
     mock_message = MagicMock()
@@ -177,3 +178,50 @@ def test_video_agent_returns_string():
 
     assert isinstance(result, str)
     assert len(result) > 0
+
+def test_orchestrator_routes_ads():
+    with patch("backend.agents.ads_agent._get_client") as mock:
+        mock_client = MagicMock()
+        mock.return_value = mock_client
+        mock_msg = MagicMock()
+        mock_msg.content = [MagicMock(text="Ad copy here")]
+        mock_client.messages.create.return_value = mock_msg
+        result = orch_generate("ads", "facebook_ad", "Brand", {})
+    assert isinstance(result, str)
+
+def test_orchestrator_routes_seo():
+    with patch("backend.agents.seo_agent._get_client") as mock:
+        mock_client = MagicMock()
+        mock.return_value = mock_client
+        mock_msg = MagicMock()
+        mock_msg.content = [MagicMock(text="SEO content")]
+        mock_client.messages.create.return_value = mock_msg
+        result = orch_generate("seo", "blog_post", "Brand", {})
+    assert isinstance(result, str)
+
+def test_orchestrator_routes_design():
+    with patch("backend.agents.design_agent._get_client") as mock:
+        mock_client = MagicMock()
+        mock.return_value = mock_client
+        mock_msg = MagicMock()
+        mock_msg.content = [MagicMock(text="Design brief")]
+        mock_client.messages.create.return_value = mock_msg
+        result = orch_generate("design", "image_prompt", "Brand", {})
+    assert isinstance(result, str)
+
+def test_orchestrator_routes_video():
+    with patch("backend.agents.video_agent._get_client") as mock:
+        mock_client = MagicMock()
+        mock.return_value = mock_client
+        mock_msg = MagicMock()
+        mock_msg.content = [MagicMock(text="Video script")]
+        mock_client.messages.create.return_value = mock_msg
+        result = orch_generate("video", "reel_script", "Brand", {})
+    assert isinstance(result, str)
+
+def test_orchestrator_raises_for_unknown():
+    try:
+        orch_generate("unknown_type", "x", "Brand", {})
+        assert False, "Should have raised ValueError"
+    except ValueError:
+        pass
