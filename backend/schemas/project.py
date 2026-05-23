@@ -22,8 +22,8 @@ class ProjectOut(BaseModel):
     title: str
     service_type: ServiceType
     status: ProjectStatus
-    deadline: Optional[datetime]
-    assigned_to: Optional[int]
+    deadline: Optional[datetime] = None
+    assigned_to: Optional[int] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

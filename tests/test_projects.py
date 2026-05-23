@@ -56,3 +56,12 @@ def test_get_project_not_found(client):
 def test_projects_require_auth(client):
     r = client.get("/projects")
     assert r.status_code in (401, 403)
+
+def test_create_project_invalid_client(client):
+    headers = get_auth(client)
+    r = client.post("/projects", json={
+        "client_id": 99999,
+        "title": "Bad Project",
+        "service_type": "social_media"
+    }, headers=headers)
+    assert r.status_code == 404
