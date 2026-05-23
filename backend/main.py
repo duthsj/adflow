@@ -1,0 +1,21 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from .database import Base, engine
+from .api import auth, clients, projects, content
+
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="MuelaADS API", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(clients.router, prefix="/clients", tags=["clients"])
+app.include_router(projects.router, prefix="/projects", tags=["projects"])
+app.include_router(content.router, prefix="/content", tags=["content"])
