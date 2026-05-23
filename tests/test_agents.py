@@ -1,6 +1,7 @@
 from unittest.mock import patch, MagicMock
 from backend.agents.social_agent import generate_social_post
 from backend.agents.ads_agent import generate_ads_copy
+from backend.agents.seo_agent import generate_seo_content
 from backend.agents.design_agent import generate_design_brief
 from backend.agents.video_agent import generate_video_content
 from backend.agents.orchestrator import generate_content as orch_generate
@@ -105,8 +106,6 @@ def test_ads_agent_generates_ab_variants():
     assert "VERSION B:" in result
 
 def test_seo_agent_returns_string():
-    from backend.agents.seo_agent import generate_seo_content
-
     mock_message = MagicMock()
     mock_message.content = [MagicMock(text="# 10 Best Tips for...\n\nIntroduction...")]
 
@@ -125,8 +124,6 @@ def test_seo_agent_returns_string():
     assert len(result) > 0
 
 def test_seo_agent_meta_tags():
-    from backend.agents.seo_agent import generate_seo_content
-
     mock_message = MagicMock()
     mock_message.content = [MagicMock(text="Title: Best Tips | Description: Learn the best tips...")]
 
