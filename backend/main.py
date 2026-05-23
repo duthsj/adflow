@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import Base, engine
+from . import models  # noqa: F401 — must import before create_all
 from .api import auth, clients, projects, content
 
 Base.metadata.create_all(engine)
