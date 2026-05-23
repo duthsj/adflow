@@ -27,6 +27,8 @@ def generate(data: GenerateContentRequest, db: Session = Depends(get_db), user: 
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=503, detail="AI service temporarily unavailable")
 
     item = ContentItem(
         project_id=data.project_id,
@@ -51,6 +53,8 @@ def approve_content(data: ApproveContentRequest, db: Session = Depends(get_db), 
     item = db.query(ContentItem).filter(ContentItem.id == data.content_id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Content not found")
+    if item.status not in (ContentStatus.draft, ContentStatus.review):
+        raise HTTPException(status_code=400, detail=f"Cannot approve content with status '{item.status}'")
     item.status = ContentStatus.approved
     item.approved_by = user.id
     db.commit()
@@ -61,6 +65,15 @@ def schedule_content(data: ScheduleContentRequest, db: Session = Depends(get_db)
     item = db.query(ContentItem).filter(ContentItem.id == data.content_id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Content not found")
+    if item.status != ContentStatus.approved:
+        raise HTTPException(status_code=400, detail="Content must be approved before scheduling")
+    existing = db.query(ScheduledPost).filter(
+        ScheduledPost.content_id == data.content_id,
+        ScheduledPost.platform == data.platform,
+        ScheduledPost.status == ScheduledPostStatus.scheduled,
+    ).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="Content already scheduled for this platform")
     post = ScheduledPost(
         content_id=data.content_id,
         platform=data.platform,

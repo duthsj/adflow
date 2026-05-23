@@ -5,7 +5,10 @@ def test_generate_social_post_calls_claude():
     mock_message = MagicMock()
     mock_message.content = [MagicMock(text="Exciting new product! #innovation #tech")]
 
-    with patch("backend.agents.social_agent._client.messages.create", return_value=mock_message):
+    with patch("backend.agents.social_agent._get_client") as mock_get_client:
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+        mock_client.messages.create.return_value = mock_message
         result = generate_social_post(
             brand_guidelines={"tone": "energetic", "keywords": ["innovation"], "avoid": [], "colors": []},
             content_type="post",
@@ -20,7 +23,10 @@ def test_generate_social_post_returns_string():
     mock_message = MagicMock()
     mock_message.content = [MagicMock(text="Test post content #hashtag")]
 
-    with patch("backend.agents.social_agent._client.messages.create", return_value=mock_message):
+    with patch("backend.agents.social_agent._get_client") as mock_get_client:
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+        mock_client.messages.create.return_value = mock_message
         result = generate_social_post(
             brand_guidelines={},
             content_type="story",
@@ -43,7 +49,10 @@ def test_content_generate_endpoint(client):
     mock_message = MagicMock()
     mock_message.content = [MagicMock(text="Amazing content! #brand #tech")]
 
-    with patch("backend.agents.social_agent._client.messages.create", return_value=mock_message):
+    with patch("backend.agents.social_agent._get_client") as mock_get_client:
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+        mock_client.messages.create.return_value = mock_message
         r = client.post("/content/generate", json={
             "project_id": proj["id"],
             "content_type": "post",

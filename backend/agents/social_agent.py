@@ -1,7 +1,13 @@
 import anthropic
 from ..config import settings
 
-_client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+_client: anthropic.Anthropic | None = None
+
+def _get_client() -> anthropic.Anthropic:
+    global _client
+    if _client is None:
+        _client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    return _client
 
 SYSTEM_PROMPT = """You are an expert social media copywriter for a marketing agency.
 You write engaging, platform-appropriate content that matches the client's brand voice.
@@ -27,7 +33,7 @@ Things to avoid: {", ".join(avoid) if avoid else "none specified"}
 
 Write a {content_type} for this client's social media. Include relevant hashtags at the end."""
 
-    message = _client.messages.create(
+    message = _get_client().messages.create(
         model="claude-sonnet-4-6",
         max_tokens=1024,
         system=SYSTEM_PROMPT,
