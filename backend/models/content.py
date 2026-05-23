@@ -14,11 +14,11 @@ class ContentStatus(str, enum.Enum):
 class ContentItem(Base):
     __tablename__ = "content_items"
     id = Column(Integer, primary_key=True, index=True)
-    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True)
     type = Column(String, nullable=False)
     body = Column(Text, nullable=False)
     status = Column(Enum(ContentStatus), default=ContentStatus.draft)
     ai_generated = Column(Boolean, default=True)
-    approved_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    approved_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     project = relationship("Project", backref="content_items")

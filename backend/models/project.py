@@ -21,11 +21,11 @@ class ServiceType(str, enum.Enum):
 class Project(Base):
     __tablename__ = "projects"
     id = Column(Integer, primary_key=True, index=True)
-    client_id = Column(Integer, ForeignKey("clients.id"), nullable=False)
+    client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False, index=True)
     title = Column(String, nullable=False)
     service_type = Column(Enum(ServiceType), nullable=False)
     status = Column(Enum(ProjectStatus), default=ProjectStatus.pending)
     deadline = Column(DateTime(timezone=True), nullable=True)
-    assigned_to = Column(Integer, ForeignKey("users.id"), nullable=True)
+    assigned_to = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     client = relationship("Client", backref="projects")
