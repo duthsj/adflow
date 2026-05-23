@@ -98,3 +98,5 @@ def test_ads_agent_generates_ab_variants():
         )
 
     assert isinstance(result, str)
+    assert "VERSION A:" in result
+    assert "VERSION B:" in result
