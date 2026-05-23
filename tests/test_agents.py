@@ -1,6 +1,7 @@
 from unittest.mock import patch, MagicMock
 from backend.agents.social_agent import generate_social_post
 from backend.agents.ads_agent import generate_ads_copy
+from backend.agents.design_agent import generate_design_brief
 
 def test_generate_social_post_calls_claude():
     mock_message = MagicMock()
@@ -139,3 +140,21 @@ def test_seo_agent_meta_tags():
         )
 
     assert isinstance(result, str)
+
+def test_design_agent_returns_string():
+    mock_message = MagicMock()
+    mock_message.content = [MagicMock(text="PROMPT: A minimalist product photo with warm tones...\nSTYLE: Clean, modern\nCOLORS: #FF5733, #FFFFFF")]
+
+    with patch("backend.agents.design_agent._get_client") as mock_get_client:
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+        mock_client.messages.create.return_value = mock_message
+        result = generate_design_brief(
+            brand_guidelines={"tone": "minimalist", "colors": ["#FF5733"], "keywords": [], "avoid": []},
+            content_type="image_prompt",
+            client_name="Modern Brand",
+            instructions="Product launch visual for Instagram"
+        )
+
+    assert isinstance(result, str)
+    assert len(result) > 0
