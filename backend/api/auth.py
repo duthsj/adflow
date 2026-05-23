@@ -5,7 +5,7 @@ from jose import jwt
 from passlib.context import CryptContext
 from ..database import get_db
 from ..models.user import User
-from ..schemas.user import UserCreate, Token, LoginRequest
+from ..schemas.user import UserCreate, Token, LoginRequest, UserOut
 from ..api.deps import get_current_user
 from ..config import settings
 
@@ -46,6 +46,6 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
         user=user,
     )
 
-@router.get("/me")
+@router.get("/me", response_model=UserOut)
 def me(current_user: User = Depends(get_current_user)):
     return current_user
