@@ -100,3 +100,42 @@ def test_ads_agent_generates_ab_variants():
     assert isinstance(result, str)
     assert "VERSION A:" in result
     assert "VERSION B:" in result
+
+def test_seo_agent_returns_string():
+    from backend.agents.seo_agent import generate_seo_content
+
+    mock_message = MagicMock()
+    mock_message.content = [MagicMock(text="# 10 Best Tips for...\n\nIntroduction...")]
+
+    with patch("backend.agents.seo_agent._get_client") as mock_get_client:
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+        mock_client.messages.create.return_value = mock_message
+        result = generate_seo_content(
+            brand_guidelines={"tone": "informative", "keywords": ["tips", "guide"], "avoid": []},
+            content_type="blog_post",
+            client_name="Tech Blog",
+            instructions="Write about productivity tips"
+        )
+
+    assert isinstance(result, str)
+    assert len(result) > 0
+
+def test_seo_agent_meta_tags():
+    from backend.agents.seo_agent import generate_seo_content
+
+    mock_message = MagicMock()
+    mock_message.content = [MagicMock(text="Title: Best Tips | Description: Learn the best tips...")]
+
+    with patch("backend.agents.seo_agent._get_client") as mock_get_client:
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+        mock_client.messages.create.return_value = mock_message
+        result = generate_seo_content(
+            brand_guidelines={},
+            content_type="meta_tags",
+            client_name="Brand",
+            instructions="Product page for running shoes"
+        )
+
+    assert isinstance(result, str)
