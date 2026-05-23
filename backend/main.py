@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .database import Base, engine
 from .api import auth, clients, projects, content
 
-Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(engine)
 
 app = FastAPI(title="MuelaADS API", version="1.0.0")
 
