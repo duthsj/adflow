@@ -2,6 +2,7 @@ from unittest.mock import patch, MagicMock
 from backend.agents.social_agent import generate_social_post
 from backend.agents.ads_agent import generate_ads_copy
 from backend.agents.design_agent import generate_design_brief
+from backend.agents.video_agent import generate_video_content
 
 def test_generate_social_post_calls_claude():
     mock_message = MagicMock()
@@ -154,6 +155,24 @@ def test_design_agent_returns_string():
             content_type="image_prompt",
             client_name="Modern Brand",
             instructions="Product launch visual for Instagram"
+        )
+
+    assert isinstance(result, str)
+    assert len(result) > 0
+
+def test_video_agent_returns_string():
+    mock_message = MagicMock()
+    mock_message.content = [MagicMock(text="HOOK (0-3s): Bold text overlay...\nSCENE 1 (3-8s): Product closeup...")]
+
+    with patch("backend.agents.video_agent._get_client") as mock_get_client:
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+        mock_client.messages.create.return_value = mock_message
+        result = generate_video_content(
+            brand_guidelines={"tone": "energetic", "keywords": ["fast", "results"], "avoid": []},
+            content_type="reel_script",
+            client_name="Fitness Brand",
+            instructions="30-second reel showing workout results"
         )
 
     assert isinstance(result, str)
