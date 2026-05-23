@@ -55,3 +55,20 @@ def test_schedule_post_uses_bearer_auth():
         headers = call_kwargs.kwargs["headers"]
 
     assert headers["Authorization"] == "Bearer my-secret-key"
+    # verify correct endpoint
+    call_url = call_kwargs.args[0]
+    assert call_url.endswith("/posts/schedule")
+
+def test_schedule_post_no_media():
+    service = BlotatoService(api_key="test-key")
+    mock_response = MagicMock()
+    mock_response.json.return_value = {"id": "blotato-789", "status": "scheduled"}
+    mock_response.raise_for_status = MagicMock()
+
+    with patch("httpx.Client") as mock_httpx:
+        mock_client = mock_httpx.return_value.__enter__.return_value
+        mock_client.post.return_value = mock_response
+        service.schedule_post("tiktok", "content", "2026-06-01T10:00:00Z")
+        payload = mock_client.post.call_args.kwargs["json"]
+
+    assert payload["media"] == []

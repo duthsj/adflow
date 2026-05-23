@@ -22,6 +22,16 @@ class BlotatoService:
             r.raise_for_status()
             return r.json()
 
+    def _get(self, endpoint: str) -> dict:
+        with httpx.Client() as client:
+            r = client.get(
+                f"{BLOTATO_BASE_URL}/{endpoint}",
+                headers=self.headers,
+                timeout=30,
+            )
+            r.raise_for_status()
+            return r.json()
+
     def schedule_post(
         self,
         platform: str,
@@ -38,11 +48,4 @@ class BlotatoService:
         return self._post("posts/schedule", payload)
 
     def get_post_status(self, blotato_id: str) -> dict:
-        with httpx.Client() as client:
-            r = client.get(
-                f"{BLOTATO_BASE_URL}/posts/{blotato_id}",
-                headers=self.headers,
-                timeout=30,
-            )
-            r.raise_for_status()
-            return r.json()
+        return self._get(f"posts/{blotato_id}")
