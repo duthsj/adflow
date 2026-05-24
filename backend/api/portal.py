@@ -45,6 +45,11 @@ def portal_approve(token: str, data: PortalApproveRequest, db: Session = Depends
     item = db.query(ContentItem).filter(ContentItem.id == data.content_id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Content not found")
+    # Verify content belongs to this token's client
+    if item.project_id:
+        proj = db.query(Project).filter(Project.id == item.project_id).first()
+        if not proj or proj.client_id != t.client_id:
+            raise HTTPException(status_code=403, detail="Content does not belong to this portal")
     if item.status not in (ContentStatus.review, ContentStatus.approved):
         raise HTTPException(status_code=400, detail="Content cannot be approved in its current state")
     item.status = ContentStatus.approved
@@ -57,7 +62,12 @@ def portal_reject(token: str, data: PortalRejectRequest, db: Session = Depends(g
     item = db.query(ContentItem).filter(ContentItem.id == data.content_id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Content not found")
-    if item.status not in (ContentStatus.draft, ContentStatus.review, ContentStatus.approved):
+    # Verify content belongs to this token's client
+    if item.project_id:
+        proj = db.query(Project).filter(Project.id == item.project_id).first()
+        if not proj or proj.client_id != t.client_id:
+            raise HTTPException(status_code=403, detail="Content does not belong to this portal")
+    if item.status not in (ContentStatus.review, ContentStatus.approved):
         raise HTTPException(status_code=400, detail="Content cannot be rejected in its current state")
     item.status = ContentStatus.draft
     db.commit()
