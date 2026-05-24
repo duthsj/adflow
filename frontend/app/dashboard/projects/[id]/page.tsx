@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import ContentGenerator from "@/components/agents/ContentGenerator";
 import api from "@/lib/api";
-import { Project, ContentItem } from "@/types";
+import { Project, ContentItem, ServiceType } from "@/types";
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "Pendiente",
@@ -50,12 +50,11 @@ export default function ProjectDetailPage() {
         </p>
       </div>
 
-      {project.service_type === "social_media" && (
-        <ContentGenerator
-          projectId={project.id}
-          onGenerated={handleGenerated}
-        />
-      )}
+      <ContentGenerator
+        projectId={project.id}
+        serviceType={project.service_type as ServiceType}
+        onGenerated={handleGenerated}
+      />
 
       <div>
         <h2 className="font-semibold mb-3">
