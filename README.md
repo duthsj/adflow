@@ -1,59 +1,50 @@
-# MuelaADS
+# AdFlow — AI Marketing Platform
 
-Marketing agency platform with AI-powered content generation.
+AI-powered marketing agency platform with automated content generation and client management.
 
-## Quick Start
+## Features
 
-### Prerequisites
-- Python 3.11+
-- Node.js 18+
-- PostgreSQL
-- PM2 (`npm install -g pm2`)
+- AI content generation powered by Claude (Anthropic) — posts, captions, campaigns
+- Client portal with content calendar and approval workflow
+- Multi-agent content pipeline per service type
+- Social media publishing via Blotato API
+- JWT authentication, role-based access (admin / client)
+- 25 unit tests (pytest)
 
-### Setup
+## Tech Stack
 
-1. Configure environment:
-   ```bash
-   cp backend/.env.example backend/.env
-   # Edit backend/.env with your API keys
-   ```
+**Backend:** Python, FastAPI, PostgreSQL, SQLAlchemy  
+**Frontend:** Next.js 15, TypeScript, Tailwind CSS  
+**AI:** Claude API (Anthropic) — content generation  
+**Publishing:** Blotato API  
+**Deploy:** PM2, Uvicorn
 
-2. Create PostgreSQL database:
-   ```sql
-   CREATE DATABASE muelaads;
-   CREATE USER muelaads WITH PASSWORD 'muelaads';
-   GRANT ALL PRIVILEGES ON DATABASE muelaads TO muelaads;
-   ```
+## Project Structure
 
-3. Start the platform:
-   ```bash
-   bash start.sh
-   ```
-
-4. Open http://localhost:3000
-
-### Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `SECRET_KEY` | JWT signing secret (generate with `python -c "import secrets; print(secrets.token_hex(32))"`) |
-| `ANTHROPIC_API_KEY` | From console.anthropic.com |
-| `BLOTATO_API_KEY` | From blotato.com/dashboard |
-
-### Development
-
-Backend only:
-```bash
-uvicorn backend.main:app --reload --port 8000
+```
+adflow/
+├── backend/          # FastAPI app + PostgreSQL models
+├── frontend/         # Next.js 15 app router
+├── tests/            # 25 unit tests (pytest)
+└── ecosystem.config.js  # PM2 config
 ```
 
-Frontend only:
+## Setup
+
 ```bash
-cd frontend && npm run dev
+cp backend/.env.example backend/.env  # add API keys
+bash start.sh
 ```
 
-Run tests:
-```bash
-python -m pytest tests/ -v
+## Environment Variables
+
 ```
+ANTHROPIC_API_KEY=your_key
+DATABASE_URL=postgresql://...
+SECRET_KEY=your_jwt_secret
+BLOTATO_API_KEY=your_key
+```
+
+---
+
+Built with FastAPI + Next.js 15 + Claude API
