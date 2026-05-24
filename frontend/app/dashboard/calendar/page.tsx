@@ -24,7 +24,9 @@ export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   useEffect(() => {
-    api.get("/content").catch(() => {});
+    api.get("/content").catch(() => {
+      /* scheduled posts endpoint not yet implemented */
+    });
     setPosts([]);
   }, []);
 

@@ -42,6 +42,7 @@ export default function ContentApproval({ item, token, onStatusChange }: Props) 
         comment: comment || undefined,
       });
       onStatusChange(item.id, "rejected");
+      setComment("");
     } finally {
       setLoading(null);
     }
