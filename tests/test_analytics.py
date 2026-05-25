@@ -27,3 +27,44 @@ def test_analytics_by_platform_empty(client):
 def test_analytics_requires_auth(client):
     r = client.get("/analytics/summary?client_id=1&period=week")
     assert r.status_code == 401
+
+def test_analytics_summary_counts_content(client):
+    h = auth_header(client)
+    r = client.post("/clients", json={"name": "CLI", "industry": "tech"}, headers=h)
+    client_id = r.json()["id"]
+    r = client.post("/projects", json={
+        "client_id": client_id, "title": "P1", "service_type": "social_media"
+    }, headers=h)
+    project_id = r.json()["id"]
+
+    from unittest.mock import patch
+    with patch("backend.api.content.generate_content", return_value="Test content"):
+        client.post("/content/generate", json={
+            "project_id": project_id, "content_type": "instagram_post", "instructions": "test"
+        }, headers=h)
+
+    r = client.get(f"/analytics/summary?client_id={client_id}&period=week", headers=h)
+    assert r.status_code == 200
+    assert r.json()["total_posts"] == 1
+    assert r.json()["pending_approvals"] == 1
+
+def test_analytics_by_platform_aggregates(client):
+    h = auth_header(client)
+    r = client.post("/clients", json={"name": "CLI", "industry": "tech"}, headers=h)
+    client_id = r.json()["id"]
+
+    from backend.models.analytics import Analytics
+    from tests.conftest import TestingSession
+    db = TestingSession()
+    db.add(Analytics(client_id=client_id, platform="instagram", metric_type="posts", value=5.0))
+    db.add(Analytics(client_id=client_id, platform="instagram", metric_type="reach", value=1000.0))
+    db.commit()
+    db.close()
+
+    r = client.get(f"/analytics/by-platform?client_id={client_id}&period=week", headers=h)
+    assert r.status_code == 200
+    data = r.json()
+    assert len(data) == 1
+    assert data[0]["platform"] == "instagram"
+    assert data[0]["posts"] == 5
+    assert data[0]["reach"] == 1000.0

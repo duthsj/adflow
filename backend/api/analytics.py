@@ -51,6 +51,7 @@ def get_summary(
             .filter(
                 ContentItem.project_id.in_(project_ids),
                 ContentItem.status.in_([ContentStatus.draft, ContentStatus.review]),
+                ContentItem.created_at >= since,
             )
             .count()
         )
@@ -95,7 +96,13 @@ def get_by_platform(
 
     platforms: dict[str, dict] = {}
     for row in rows:
-        p = platforms.setdefault(row.platform, {"posts": 0, "reach": 0.0, "engagement": 0.0, "reach_count": 0, "eng_count": 0})
+        p = platforms.setdefault(row.platform, {
+            "posts": 0,
+            "reach": 0.0,
+            "engagement": 0.0,
+            "reach_count": 0,
+            "eng_count": 0,
+        })
         if row.metric_type == "posts":
             p["posts"] += int(row.value)
         elif row.metric_type == "reach":
