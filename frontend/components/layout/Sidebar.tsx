@@ -1,10 +1,12 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, FolderKanban, Calendar, BarChart2, Image, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, FolderKanban, Calendar, BarChart2, Image, CreditCard, UserPlus, LogOut } from "lucide-react";
 import { removeToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import api from "@/lib/api";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -13,11 +15,24 @@ const nav = [
   { href: "/dashboard/calendar", label: "Calendario", icon: Calendar },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart2 },
   { href: "/dashboard/assets", label: "Assets", icon: Image },
+  { href: "/dashboard/members", label: "Equipo", icon: UserPlus },
+  { href: "/dashboard/billing", label: "Facturación", icon: CreditCard },
 ];
+
+const PLAN_COLORS: Record<string, string> = {
+  free: "bg-gray-600 text-gray-200",
+  pro: "bg-orange-600 text-white",
+  agency: "bg-purple-600 text-white",
+};
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [plan, setPlan] = useState<string>("free");
+
+  useEffect(() => {
+    api.get("/billing/status").then((r) => setPlan(r.data.plan)).catch(() => {});
+  }, []);
 
   const logout = () => {
     removeToken();
@@ -29,6 +44,9 @@ export default function Sidebar() {
       <div className="p-6 border-b border-gray-700">
         <h1 className="text-xl font-bold text-orange-400">MuelaADS</h1>
         <p className="text-xs text-gray-400 mt-1">Marketing Agency</p>
+        <span className={cn("inline-block mt-2 text-xs px-2 py-0.5 rounded-full font-medium capitalize", PLAN_COLORS[plan] ?? PLAN_COLORS.free)}>
+          {plan}
+        </span>
       </div>
       <nav className="flex-1 p-4 space-y-1">
         {nav.map(({ href, label, icon: Icon }) => (
