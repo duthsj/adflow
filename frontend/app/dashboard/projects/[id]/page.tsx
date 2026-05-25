@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import ContentGenerator from "@/components/agents/ContentGenerator";
 import api from "@/lib/api";
 import { Project, ContentItem, ServiceType } from "@/types";
+import { toast } from "sonner";
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "Pendiente",
@@ -30,12 +31,17 @@ export default function ProjectDetailPage() {
   };
 
   const approve = async (contentId: number) => {
-    await api.post("/content/approve", { content_id: contentId });
-    setContent((prev) =>
-      prev.map((c) =>
-        c.id === contentId ? { ...c, status: "approved" as const } : c
-      )
-    );
+    try {
+      await api.post("/content/approve", { content_id: contentId });
+      setContent((prev) =>
+        prev.map((c) =>
+          c.id === contentId ? { ...c, status: "approved" as const } : c
+        )
+      );
+      toast.success("Contenido aprobado");
+    } catch {
+      toast.error("Error aprobando contenido");
+    }
   };
 
   if (!project) return <div className="text-gray-400">Cargando...</div>;
