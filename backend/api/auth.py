@@ -5,6 +5,7 @@ from jose import jwt
 from passlib.context import CryptContext
 from ..database import get_db
 from ..models.user import User
+from ..models.workspace import Workspace, WorkspaceMember, WorkspaceRole
 from ..schemas.user import UserCreate, Token, LoginRequest, UserOut
 from ..api.deps import get_current_user
 from ..config import settings
@@ -31,6 +32,12 @@ def register(data: UserCreate, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
+    workspace = Workspace(name=f"{data.name}'s Agency")
+    db.add(workspace)
+    db.flush()
+    member = WorkspaceMember(workspace_id=workspace.id, user_id=user.id, role=WorkspaceRole.owner)
+    db.add(member)
+    db.commit()
     return Token(
         access_token=create_token(user.id),
         token_type="bearer",

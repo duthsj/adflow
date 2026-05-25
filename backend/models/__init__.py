@@ -1,4 +1,5 @@
 from .user import User, UserRole
+from .workspace import Workspace, WorkspaceMember, WorkspacePlan, WorkspaceRole
 from .client import Client
 from .project import Project, ProjectStatus, ServiceType
 from .content import ContentItem, ContentStatus
