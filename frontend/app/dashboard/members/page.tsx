@@ -32,7 +32,7 @@ export default function MembersPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    api.get("/workspaces/me/members").then((r) => setMembers(r.data)).catch(() => {});
+    api.get("/workspaces/me/members").then((r) => setMembers(r.data)).catch(() => toast.error("Error cargando miembros"));
   }, []);
 
   const createInvite = async () => {
