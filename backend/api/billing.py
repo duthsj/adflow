@@ -45,13 +45,18 @@ def create_checkout(
         raise HTTPException(status_code=503, detail="Billing not configured")
 
     if not workspace.stripe_customer_id:
+        from sqlalchemy.exc import IntegrityError
         customer = stripe.Customer.create(
             email=user.email,
             name=workspace.name,
             metadata={"workspace_id": str(workspace.id)},
         )
         workspace.stripe_customer_id = customer.id
-        db.commit()
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            db.refresh(workspace)
 
     session = stripe.checkout.Session.create(
         customer=workspace.stripe_customer_id,
@@ -82,11 +87,13 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
 
     try:
         event = stripe.Webhook.construct_event(payload, sig, settings.stripe_webhook_secret)
+    except stripe.error.SignatureVerificationError:
+        raise HTTPException(status_code=400, detail="Invalid webhook signature")
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid webhook payload")
 
-    event_type = event["type"]
-    sub_obj = event["data"]["object"]
+    event_type = event.get("type", "")
+    sub_obj = event.get("data", {}).get("object", {})
 
     if event_type in ("customer.subscription.created", "customer.subscription.updated"):
         workspace_id_str = sub_obj.get("metadata", {}).get("workspace_id")
@@ -99,12 +106,8 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                     WorkspaceSubscriptionStatus.active if status == "active"
                     else WorkspaceSubscriptionStatus.inactive
                 )
-                price_id = (
-                    sub_obj.get("items", {})
-                    .get("data", [{}])[0]
-                    .get("price", {})
-                    .get("id", "")
-                )
+                items_data = sub_obj.get("items", {}).get("data", [])
+                price_id = items_data[0].get("price", {}).get("id", "") if items_data else ""
                 if price_id == settings.stripe_pro_price_id:
                     workspace.plan = WorkspacePlan.pro
                 elif price_id == settings.stripe_agency_price_id:
