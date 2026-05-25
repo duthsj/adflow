@@ -56,11 +56,11 @@ def accept_invite(
     if not invite:
         raise HTTPException(status_code=404, detail="Invalid or expired invite")
     if datetime.now(timezone.utc) > invite["expires_at"]:
-        del _invite_store[token]
+        _invite_store.pop(token, None)
         raise HTTPException(status_code=410, detail="Invite expired")
 
     # Delete token before DB write to prevent duplicate acceptance
-    del _invite_store[token]
+    _invite_store.pop(token, None)
 
     already = db.query(WorkspaceMember).filter(
         WorkspaceMember.workspace_id == invite["workspace_id"],
