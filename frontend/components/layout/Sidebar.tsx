@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, FolderKanban, Calendar, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, FolderKanban, Calendar, BarChart2, Image, LogOut } from "lucide-react";
 import { removeToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
@@ -11,6 +11,8 @@ const nav = [
   { href: "/dashboard/clients", label: "Clientes", icon: Users },
   { href: "/dashboard/projects", label: "Proyectos", icon: FolderKanban },
   { href: "/dashboard/calendar", label: "Calendario", icon: Calendar },
+  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart2 },
+  { href: "/dashboard/assets", label: "Assets", icon: Image },
 ];
 
 export default function Sidebar() {
