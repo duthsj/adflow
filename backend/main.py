@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import Base, engine
 from . import models  # noqa: F401 — must import before create_all
-from .api import auth, clients, projects, content, portal, analytics
+from .api import auth, clients, projects, content, portal, analytics, assets
 
 Base.metadata.create_all(engine)
 
@@ -22,3 +22,4 @@ app.include_router(projects.router, prefix="/projects", tags=["projects"])
 app.include_router(content.router, prefix="/content", tags=["content"])
 app.include_router(portal.router, prefix="/portal", tags=["portal"])
 app.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
+app.include_router(assets.router, prefix="/assets", tags=["assets"])
