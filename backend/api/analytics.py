@@ -164,6 +164,8 @@ Be specific and direct. No fluff."""
         max_tokens=300,
         messages=[{"role": "user", "content": prompt}],
     )
+    if not response.content:
+        raise HTTPException(status_code=503, detail="AI service returned empty response")
     text = response.content[0].text
     lines = [l.strip().lstrip("123.-) ") for l in text.strip().split("\n") if l.strip()]
-    return InsightsResponse(insights=lines[:3])
+    return InsightsResponse(insights=lines[:3] if lines else ["No insights available"])

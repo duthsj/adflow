@@ -54,7 +54,9 @@ def generate_report(
         insights=insights,
     )
 
-    filename = f"muelaads-report-{client.name.lower().replace(' ', '-')}-{data.period}.pdf"
+    safe_name = "".join(c for c in client.name.lower() if c.isalnum() or c in " -_").replace(" ", "-")
+    safe_period = data.period if data.period in ("week", "month") else "week"
+    filename = f"muelaads-report-{safe_name}-{safe_period}.pdf"
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",

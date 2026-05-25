@@ -17,9 +17,9 @@ def list_assets(
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
-    q = db.query(Asset)
-    if client_id is not None:
-        q = q.filter(Asset.client_id == client_id)
+    if client_id is None:
+        return []  # require client_id to prevent listing all assets
+    q = db.query(Asset).filter(Asset.client_id == client_id)
     if asset_type is not None:
         q = q.filter(Asset.type == asset_type)
     return q.order_by(Asset.created_at.desc()).all()
