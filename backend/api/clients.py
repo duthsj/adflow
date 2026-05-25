@@ -70,6 +70,7 @@ def update_client(
     client = db.query(Client).filter(
         Client.id == client_id,
         Client.workspace_id == workspace.id,
+        Client.active == True,
     ).first()
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
