@@ -5,16 +5,23 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models.client import Client
 from ..models.user import User
+from ..models.workspace import Workspace
 from ..models.approval_token import ApprovalToken
 from ..schemas.client import ClientCreate, ClientUpdate, ClientOut
 from ..schemas.portal import PortalTokenCreate, PortalTokenOut
-from ..api.deps import get_current_user
+from .deps import get_current_user, get_current_workspace
 
 router = APIRouter()
 
 @router.post("", response_model=ClientOut)
-def create_client(data: ClientCreate, db: Session = Depends(get_db), _: User = Depends(get_current_user)):
+def create_client(
+    data: ClientCreate,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+    workspace: Workspace = Depends(get_current_workspace),
+):
     client = Client(
+        workspace_id=workspace.id,
         name=data.name,
         industry=data.industry,
         brand_guidelines=data.brand_guidelines.model_dump(),
@@ -26,19 +33,44 @@ def create_client(data: ClientCreate, db: Session = Depends(get_db), _: User = D
     return client
 
 @router.get("", response_model=list[ClientOut])
-def list_clients(db: Session = Depends(get_db), _: User = Depends(get_current_user)):
-    return db.query(Client).filter(Client.active == True).all()
+def list_clients(
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+    workspace: Workspace = Depends(get_current_workspace),
+):
+    return db.query(Client).filter(
+        Client.workspace_id == workspace.id,
+        Client.active == True,
+    ).all()
 
 @router.get("/{client_id}", response_model=ClientOut)
-def get_client(client_id: int, db: Session = Depends(get_db), _: User = Depends(get_current_user)):
-    client = db.query(Client).filter(Client.id == client_id, Client.active == True).first()
+def get_client(
+    client_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+    workspace: Workspace = Depends(get_current_workspace),
+):
+    client = db.query(Client).filter(
+        Client.id == client_id,
+        Client.workspace_id == workspace.id,
+        Client.active == True,
+    ).first()
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
     return client
 
 @router.put("/{client_id}", response_model=ClientOut)
-def update_client(client_id: int, data: ClientUpdate, db: Session = Depends(get_db), _: User = Depends(get_current_user)):
-    client = db.query(Client).filter(Client.id == client_id).first()
+def update_client(
+    client_id: int,
+    data: ClientUpdate,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+    workspace: Workspace = Depends(get_current_workspace),
+):
+    client = db.query(Client).filter(
+        Client.id == client_id,
+        Client.workspace_id == workspace.id,
+    ).first()
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
     updates = data.model_dump(exclude_none=True)
@@ -53,9 +85,14 @@ def create_portal_token(
     client_id: int,
     data: PortalTokenCreate,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user)
+    user: User = Depends(get_current_user),
+    workspace: Workspace = Depends(get_current_workspace),
 ):
-    client = db.query(Client).filter(Client.id == client_id, Client.active == True).first()
+    client = db.query(Client).filter(
+        Client.id == client_id,
+        Client.workspace_id == workspace.id,
+        Client.active == True,
+    ).first()
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
     token_str = secrets.token_urlsafe(32)
