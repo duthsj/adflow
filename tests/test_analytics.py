@@ -68,3 +68,21 @@ def test_analytics_by_platform_aggregates(client):
     assert data[0]["platform"] == "instagram"
     assert data[0]["posts"] == 5
     assert data[0]["reach"] == 1000.0
+
+from unittest.mock import patch
+
+def test_analytics_insights(client):
+    h = auth_header(client)
+    r = client.post("/clients", json={"name": "CLI", "industry": "tech"}, headers=h)
+    client_id = r.json()["id"]
+
+    mock_response = type("R", (), {
+        "content": [type("C", (), {"text": "Tip 1. Tip 2. Tip 3."})()]
+    })()
+
+    with patch("backend.api.analytics._get_client") as mock_claude:
+        mock_claude.return_value.messages.create.return_value = mock_response
+        r = client.post("/analytics/insights", json={"client_id": client_id, "period": "week"}, headers=h)
+    assert r.status_code == 200
+    assert "insights" in r.json()
+    assert len(r.json()["insights"]) > 0

@@ -9,6 +9,16 @@ from ..models.client import Client
 from ..models.user import User
 from ..schemas.analytics import AnalyticsSummary, PlatformStat, InsightsRequest, InsightsResponse
 from ..api.deps import get_current_user
+import anthropic
+from ..config import settings
+
+_client: anthropic.Anthropic | None = None
+
+def _get_client() -> anthropic.Anthropic:
+    global _client
+    if _client is None:
+        _client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    return _client
 
 router = APIRouter()
 
@@ -121,3 +131,39 @@ def get_by_platform(
         )
         for k, v in platforms.items()
     ]
+
+@router.post("/insights", response_model=InsightsResponse)
+def get_insights(
+    data: InsightsRequest,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    client = db.query(Client).filter(Client.id == data.client_id).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+
+    summary = get_summary(client_id=data.client_id, period=data.period, db=db)
+
+    prompt = f"""You are a marketing analyst reviewing performance for {client.name} ({client.industry}).
+
+Period: {data.period}
+Total posts: {summary.total_posts}
+Average reach: {summary.avg_reach:.0f}
+Average engagement rate: {summary.avg_engagement:.1f}%
+Pending approvals: {summary.pending_approvals}
+
+Provide exactly 3 short, actionable bullet points (1 sentence each):
+1. What worked well
+2. What needs improvement
+3. Top recommendation for next {data.period}
+
+Be specific and direct. No fluff."""
+
+    response = _get_client().messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=300,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    text = response.content[0].text
+    lines = [l.strip().lstrip("123.-) ") for l in text.strip().split("\n") if l.strip()]
+    return InsightsResponse(insights=lines[:3])
