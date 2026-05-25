@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     r2_endpoint: str = ""
     r2_access_key: str = ""
     r2_secret_key: str = ""
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_pro_price_id: str = ""
+    stripe_agency_price_id: str = ""
+    frontend_url: str = "http://localhost:3000"
 
     @field_validator("secret_key")
     @classmethod
